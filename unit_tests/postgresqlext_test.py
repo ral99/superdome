@@ -8,19 +8,31 @@ from whodat.wsgi import *
 ### Settings ###
 
 POSTGRESQL_CONNECTIONS = {
-    'db': [
-        {
+    'db': {
+        'master': {
             'database': 'testing',
             'host': 'localhost',
             'port': 5432,
             'user': 'user',
-            'password': 'user',
-            'accept_writes': True,
-            'accept_reads': True,
-            'autocommit': False,
-            'max_connection_age_in_seconds': None
+            'password': 'user'
         },
-    ]
+        'slave': [
+            {
+                'database': 'testing',
+                'host': 'localhost',
+                'port': 5432,
+                'user': 'user',
+                'password': 'user'
+            },
+            {
+                'database': 'testing',
+                'host': 'localhost',
+                'port': 5432,
+                'user': 'user',
+                'password': 'user'
+            }
+        ]
+    }
 }
 
 ### Handlers ###
@@ -28,16 +40,18 @@ POSTGRESQL_CONNECTIONS = {
 @url('/')
 class RootHandler:
     def get(self, request):
-        conn = request.pgsql.get_connection_for_reading_from('db')
-        conn.execute("SELECT DISTINCT name FROM names ORDER BY name")
-        return ', '.join([row[0] for row in conn.fetch_all()])
+        db_conn = request.pgsql.get_slave_connection('db')
+        with db_conn.open_cursor() as db_cursor:
+            db_cursor.execute("SELECT DISTINCT name FROM names ORDER BY name")
+            return ', '.join([row[0] for row in db_cursor.fetch_all()])
 
     def post(self, request):
-        conn = request.pgsql.get_connection_for_writing_to('db')
-        conn.execute("INSERT INTO names (name) VALUES (%s)", ('Brees',))
-        conn.execute("INSERT INTO names (name) VALUES (%s)", ('Gleason',))
-        conn.execute("INSERT INTO names (name) VALUES (%s)", ('Graham',))
-        conn.commit()
+        db_conn = request.pgsql.get_master_transactional_connection('db')
+        with db_conn.open_cursor() as db_cursor:
+            db_cursor.execute("INSERT INTO names (name) VALUES (%s)", ('Brees',))
+            db_cursor.execute("INSERT INTO names (name) VALUES (%s)", ('Gleason',))
+            db_cursor.execute("INSERT INTO names (name) VALUES (%s)", ('Graham',))
+            db_conn.commit()
         return ''
 
 ### Tests ###
