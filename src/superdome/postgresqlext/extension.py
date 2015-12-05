@@ -4,10 +4,10 @@ from whodat.extension import Extension
 class PostgreSQLExtension(Extension):
     """Extension that adds a pool of PostgreSQL databases connections to request."""
 
-    def __init__(self, connections_settings, attr_name):
+    def __init__(self, connections_settings, connection_test_interval_in_seconds, attr_name):
         """Set the pool of connections."""
         self._attr_name = attr_name
-        self._pool = PGWizardConnectionPool()
+        self._pool = PGWizardConnectionPool(connection_test_interval_in_seconds)
         for name, connection in connections_settings.items():
             if 'master' in connection:
                 master = connection['master']

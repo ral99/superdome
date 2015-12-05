@@ -58,7 +58,7 @@ class RootHandler:
 
 class PostgreSQLExtensionTest(unittest.TestCase):
     def setUp(self):
-        self.app = WSGIApplication(False, extensions=[PostgreSQLExtension(POSTGRESQL_CONNECTIONS, 'pgsql')])
+        self.app = WSGIApplication(False, extensions=[PostgreSQLExtension(POSTGRESQL_CONNECTIONS, 60, 'pgsql')])
         self.app.add_handler(RootHandler)
 
     def test_connection(self):
