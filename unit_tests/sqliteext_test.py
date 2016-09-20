@@ -19,7 +19,7 @@ class RootHandler:
     def post(self, request):
         sqlite_cursor = request.sqlite_conn.cursor()
         sqlite_cursor.execute("SELECT * FROM t;")
-        return str(sqlite_cursor.fetchone()[0])
+        return str(sqlite_cursor.fetchone()['id'])
 
 ### Tests ###
 

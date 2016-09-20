@@ -9,6 +9,7 @@ class SQLiteExtension(Extension):
         """Set up the connection with database."""
         self._attr_name = attr_name
         self._connection = sqlite3.connect(database)
+        self._connection.row_factory = sqlite3.Row
 
     def process_request(self, request):
         """Set the connection attribute in request."""
